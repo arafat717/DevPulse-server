@@ -107,49 +107,9 @@ var loginIntoDb = async (payload) => {
   delete user.password;
   return { token, user };
 };
-var getAllUserFromDb = async () => {
-  const result = await pool.query(
-    `
-    SELECT * FROM users
-    `
-  );
-  return result;
-};
-var getSingleUserFromDb = async (id) => {
-  const result = await pool.query(
-    `
-    SELECT * FROM users WHERE id=$1
-    `,
-    [id]
-  );
-  return result;
-};
-var updateUserIntoDb = async (id, payload) => {
-  const { name, email, role } = payload;
-  const result = await pool.query(
-    `
-    UPDATE users SET name=COALESCE($1 , name), email=COALESCE($2 , email), role=COALESCE($3 , role) WHERE id=$4 RETURNING *
-    `,
-    [name, email, role, id]
-  );
-  return result;
-};
-var deleteUserIntoDb = async (id) => {
-  const result = await pool.query(
-    `
-    DELETE FROM users WHERE id=$1
-    `,
-    [id]
-  );
-  return result;
-};
 var userService = {
   createUserIntoDb,
-  loginIntoDb,
-  getAllUserFromDb,
-  getSingleUserFromDb,
-  updateUserIntoDb,
-  deleteUserIntoDb
+  loginIntoDb
 };
 
 // src/utils/sendResponse.ts
@@ -201,128 +161,15 @@ var loginUser = async (req, res) => {
     });
   }
 };
-var getAllUsers = async (req, res) => {
-  try {
-    const result = await userService.getAllUserFromDb();
-    const newResult = result.rows.map((rls) => {
-      const { password, ...rest } = rls;
-      return rest;
-    });
-    sendResponse_default(res, {
-      statusCode: 200,
-      message: "Users retrived successfully!",
-      success: true,
-      data: newResult
-    });
-  } catch (err) {
-    sendResponse_default(res, {
-      statusCode: 500,
-      message: err.message,
-      success: false,
-      error: err
-    });
-  }
-};
-var getSingleUser = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const result = await userService.getSingleUserFromDb(id);
-    if (result.rows.length === 0) {
-      sendResponse_default(res, {
-        statusCode: 404,
-        message: "User not found!",
-        success: false,
-        data: null
-      });
-    }
-    delete result.rows[0].password;
-    sendResponse_default(res, {
-      statusCode: 200,
-      message: "User retrived successfully!",
-      success: true,
-      data: result?.rows[0]
-    });
-  } catch (err) {
-    sendResponse_default(res, {
-      statusCode: 500,
-      message: err.message,
-      success: false,
-      error: err
-    });
-  }
-};
-var updateUser = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const result = await userService.updateUserIntoDb(id, req.body);
-    if (result.rows.length === 0) {
-      sendResponse_default(res, {
-        statusCode: 404,
-        message: "User not found!",
-        success: false,
-        data: null
-      });
-    }
-    delete result.rows[0].password;
-    sendResponse_default(res, {
-      statusCode: 200,
-      message: "User updated successfully!",
-      success: true,
-      data: result?.rows
-    });
-  } catch (err) {
-    sendResponse_default(res, {
-      statusCode: 500,
-      message: err.message,
-      success: false,
-      error: err
-    });
-  }
-};
-var deleteUser = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const result = await userService.deleteUserIntoDb(id);
-    if (result.rowCount === 0) {
-      sendResponse_default(res, {
-        statusCode: 404,
-        message: "User not found!",
-        success: false,
-        data: null
-      });
-    }
-    sendResponse_default(res, {
-      statusCode: 200,
-      message: "User deleted successfully!",
-      success: true,
-      data: null
-    });
-  } catch (err) {
-    sendResponse_default(res, {
-      statusCode: 500,
-      message: err.message,
-      success: false,
-      error: err
-    });
-  }
-};
 var userController = {
   createUser,
-  loginUser,
-  getAllUsers,
-  getSingleUser,
-  updateUser,
-  deleteUser
+  loginUser
 };
 
 // src/module/user/user.route.ts
 var router = Router();
 router.post("/signup", userController.createUser);
 router.post("/login", userController.loginUser);
-router.get("/", userController.getAllUsers);
-router.get("/:id", userController.getSingleUser);
-router.put("/:id", userController.updateUser);
-router.delete("/:id", userController.deleteUser);
 var userRoute = router;
 
 // src/app.ts
