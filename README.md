@@ -42,4 +42,4 @@ A collaborative platform for software teams to report bugs, suggest features, an
 
 ### 1. Clone the repository
 ```bash
-git clone (https://github.com/arafat717/DevPulse-server)
+git clone https://github.com/arafat717/DevPulse-server
