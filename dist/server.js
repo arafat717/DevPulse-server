@@ -12,19 +12,18 @@ import express from "express";
 // src/module/user/user.route.ts
 import { Router } from "express";
 
-// src/db/index.ts
-import { Pool } from "pg";
-
 // src/config/index.ts
 import path from "path";
 import dotenv from "dotenv";
 dotenv.config({ path: path.join(process.cwd(), ".env") });
 var config = {
   port: process.env.PORT,
-  db_url: process.env.DB_URL
+  db_url: process.env.DB_URL,
+  access_token: process.env.ACCESS_TOKEN
 };
 
 // src/db/index.ts
+import { Pool } from "pg";
 var pool = new Pool({
   connectionString: config.db_url
 });
@@ -90,7 +89,10 @@ var loginIntoDb = async (payload) => {
   if (!user) {
     throw new Error("User not found!");
   }
-  const isPasswordMatch = await bycript.compare(password, user?.password);
+  const isPasswordMatch = await bycript.compare(
+    password,
+    user?.password
+  );
   if (!isPasswordMatch) {
     throw new Error("Password is incorrect!");
   }
@@ -99,7 +101,9 @@ var loginIntoDb = async (payload) => {
     name: user?.name,
     role: user?.role
   };
-  const token = jwt.sign(JwtPayload, "accessToken", { expiresIn: "7d" });
+  const token = jwt.sign(JwtPayload, config.access_token, {
+    expiresIn: "7d"
+  });
   delete user.password;
   return { token, user };
 };
@@ -589,7 +593,7 @@ var auth = (...roles2) => {
       }
       const decodedToken = jwt2.verify(
         token,
-        "accessToken"
+        config.access_token
       );
       const userExist = await pool.query(
         `

@@ -2,6 +2,7 @@ import type { NextFunction, Request, Response } from "express";
 import sendResponse from "../utils/sendResponse";
 import jwt, { type JwtPayload } from "jsonwebtoken";
 import { pool } from "../db";
+import { config } from "../config";
 
 type Roles = "contributor" | "maintainer";
 
@@ -18,7 +19,7 @@ const auth = (...roles: Roles[]) => {
       }
       const decodedToken = jwt.verify(
         token as string,
-        "accessToken",
+        config.access_token as string,
       ) as JwtPayload;
 
       const userExist = await pool.query(

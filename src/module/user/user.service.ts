@@ -1,3 +1,4 @@
+import { config } from "../../config";
 import { pool } from "../../db";
 import type { IUser } from "./user.interface";
 import bycript from "bcrypt";
@@ -34,7 +35,10 @@ const loginIntoDb = async (payload: Partial<IUser>) => {
     throw new Error("User not found!");
   }
 
-  const isPasswordMatch = await bycript.compare(password as string, user?.password);
+  const isPasswordMatch = await bycript.compare(
+    password as string,
+    user?.password,
+  );
 
   if (!isPasswordMatch) {
     throw new Error("Password is incorrect!");
@@ -46,7 +50,9 @@ const loginIntoDb = async (payload: Partial<IUser>) => {
     role: user?.role,
   };
 
-  const token = jwt.sign(JwtPayload, "accessToken", { expiresIn: "7d" });
+  const token = jwt.sign(JwtPayload, config.access_token as string, {
+    expiresIn: "7d",
+  });
   delete user.password;
 
   return { token, user };
