@@ -555,7 +555,7 @@ app.use(cookieParser());
 app.use("/api/auth", userRoute);
 app.use("/api/issues", issueRouter);
 app.get("/", (req, res) => {
-  res.send("Hello World!");
+  res.send("DevPluse server is running!");
 });
 app.use(globalError_default);
 app.use((req, res) => {

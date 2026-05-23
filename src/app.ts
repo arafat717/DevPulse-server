@@ -14,7 +14,7 @@ app.use("/api/auth", userRoute);
 app.use("/api/issues", issueRouter);
 
 app.get("/", (req: Request, res: Response) => {
-  res.send("Hello World!");
+  res.send("DevPluse server is running!");
 });
 
 app.use(globarErrorHandler);
